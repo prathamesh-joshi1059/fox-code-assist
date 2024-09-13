@@ -89,6 +89,8 @@ export class OrderService {
         ),
       ]);
 
+      const unused;
+      
       const mapData = (data: DaysOrderData[], isPlaceholder: boolean) =>
         data.map((item) => ({
           projectType: item.project_type,
