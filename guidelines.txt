@@ -1,1 +1,3 @@
-
+do not change formatting 
+do not remove one line comments
+calculate percentage of best practice followed and write it at last line as one line comment
