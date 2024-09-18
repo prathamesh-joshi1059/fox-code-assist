@@ -1,5 +1,3 @@
-import { GeoPoint } from '@google-cloud/firestore';
-
 export interface DaysOrderData {
   project_type: string;
   client_name: string;
@@ -17,5 +15,5 @@ export interface DaysOrderData {
   start_date?: Date | string;
   end_date?: Date | string;
   phone?: string | null;
-  geo_point?: GeoPoint;
+  geo_point?: { latitude: number; longitude: number } | null;
 }

@@ -28,7 +28,6 @@ import { UpdatePlaceholderRespDTO } from './dto/update-placeholder-resp.dto';
 export class PlaceholdersController {
   constructor(private readonly placeholdersService: PlaceholdersService) {}
 
-  // Creates a new placeholder
   @Post()
   @ApiCreatedResponse({
     schema: {
@@ -56,34 +55,10 @@ export class PlaceholdersController {
   })
   async createPlaceholder(
     @Body() body: CreatePlaceholderReqDTO,
-  ): Promise<ResponseDTO<Array<CreatePlaceholderRespDTO | Error>>> {
-    try {
-      const placeholderData: CreatePlaceholderRespDTO | Error =
-        await this.placeholdersService.createPlaceholder(body);
-
-      const placeholderResponse: ResponseDTO<
-        Array<CreatePlaceholderRespDTO | Error>
-      > = {
-        status: 'Success',
-        statusCode: 1000,
-        message: 'Placeholder Created',
-        data: [placeholderData],
-      };
-
-      return placeholderResponse;
-    } catch (error) {
-      const errorResponse = {
-        status: 'Fail',
-        statusCode: 1005,
-        message: 'Error creating placeholder',
-        data: [error.message],
-      };
-
-      return errorResponse;
-    }
+  ): Promise<ResponseDTO<CreatePlaceholderRespDTO | Error>> {
+    return this.handleResponse(() => this.placeholdersService.createPlaceholder(body), 'Placeholder Created', 1000, 1005, 'Error creating placeholder');
   }
 
-  // Updates an existing placeholder
   @Patch('/:orderId')
   @ApiResponse({
     status: 1000,
@@ -112,33 +87,10 @@ export class PlaceholdersController {
   async updatePlaceholder(
     @Param('orderId') orderId: string,
     @Body() updatePlaceholderDto: UpdatePlaceholderReqDTO,
-  ): Promise<ResponseDTO<Array<UpdatePlaceholderRespDTO | Error>>> {
-    try {
-      const placeholderData = await this.placeholdersService.updatePlaceholder(
-        orderId,
-        updatePlaceholderDto,
-      );
-      const placeholderResponse: ResponseDTO<
-        Array<UpdatePlaceholderRespDTO | Error>
-      > = {
-        status: 'Success',
-        statusCode: 1000,
-        message: 'Placeholder Updated',
-        data: [placeholderData],
-      };
-      return placeholderResponse;
-    } catch (error) {
-      const errorResponse = {
-        status: 'Fail',
-        statusCode: 1006,
-        message: 'Error updating placeholder',
-        data: [error.message],
-      };
-      return errorResponse;
-    }
+  ): Promise<ResponseDTO<UpdatePlaceholderRespDTO | Error>> {
+    return this.handleResponse(() => this.placeholdersService.updatePlaceholder(orderId, updatePlaceholderDto), 'Placeholder Updated', 1000, 1006, 'Error updating placeholder');
   }
 
-  // Deletes a placeholder
   @Delete('/:orderId')
   @ApiResponse({
     status: 1000,
@@ -168,28 +120,26 @@ export class PlaceholdersController {
   })
   async deletePlaceholder(
     @Param('orderId') orderId: string,
-  ): Promise<ResponseDTO<Array<string | Error>>> {
+  ): Promise<ResponseDTO<string | Error>> {
+    return this.handleResponse(() => this.placeholdersService.deletePlaceholder('placeholder', orderId), 'Placeholder deleted', 1000, 1010, 'Error deleting placeholder');
+  }
+
+  private async handleResponse<T>(serviceCall: () => Promise<T>, successMessage: string, successCode: number, errorCode: number, errorMessage: string): Promise<ResponseDTO<T | Error>> {
     try {
-      const collection = 'placeholder';
-      const message = await this.placeholdersService.deletePlaceholder(
-        collection,
-        orderId,
-      );
-      const placeholderResponse: ResponseDTO<Array<string | Error>> = {
+      const data = await serviceCall();
+      return {
         status: 'Success',
-        statusCode: 1000,
-        message: typeof message === 'string' ? message : message.message,
-        data: [message],
+        statusCode: successCode,
+        message: successMessage,
+        data: [data],
       };
-      return placeholderResponse;
     } catch (error) {
-      const errorResponse = {
+      return {
         status: 'Fail',
-        statusCode: 1010,
-        message: 'Error deleting placeholder',
+        statusCode: errorCode,
+        message: errorMessage,
         data: [error.message],
       };
-      return errorResponse;
     }
   }
 }

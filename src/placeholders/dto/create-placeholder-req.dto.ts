@@ -1,15 +1,13 @@
 import {
   ArrayNotEmpty,
   IsArray,
-  IsDateString,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
-  Matches,
   ValidateNested,
 } from 'class-validator';
-import { Transform, Type } from 'class-transformer';
+import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class Fences {
@@ -48,8 +46,8 @@ export class CreatePlaceholderReqDTO {
   projectType: string;
 
   @ApiProperty()
-  @IsString()
   @IsOptional()
+  @IsString()
   notes?: string;
 
   @ApiProperty()
@@ -63,8 +61,8 @@ export class CreatePlaceholderReqDTO {
   workType: string;
 
   @ApiProperty()
-  @IsString()
   @IsOptional()
+  @IsString()
   driver?: string;
 
   @ApiProperty()

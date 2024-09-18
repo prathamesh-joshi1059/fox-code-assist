@@ -1,4 +1,4 @@
-import { Body, HttpException, Injectable } from '@nestjs/common';
+import { Body, Injectable } from '@nestjs/common';
 import { FirestoreService } from '../common/firestore/firestore.service';
 import { GetCalendarViewReqDTO } from './dto/get-calendar-view-req.dto';
 import { CreateCalendarViewReqDTO } from './dto/create-calendar-view-req.dto';
@@ -15,16 +15,13 @@ export class CalendarViewService {
     private readonly orderService: OrderService,
   ) {}
 
-  // Retrieves default calendar view data and orders data for a existing user or creates a new user and returns null data
   async getCalendarView(
     @Body() body: GetCalendarViewReqDTO,
-  ): Promise<GetCalendarViewRespDTO | Error> {
+  ): Promise<GetCalendarViewRespDTO> {
+    const { userId, userName } = body;
+
     try {
-      const { userId, userName } = body;
-      const userDoc = await this.firestoreService.getDocumentByName(
-        'Users',
-        userId,
-      );
+      const userDoc = await this.firestoreService.getDocumentByName('Users', userId);
 
       if (!userDoc) {
         const newUserData = {
@@ -49,10 +46,7 @@ export class CalendarViewService {
         );
         const { branches } = calendarViewData;
         const yearMonth = new Date().toISOString().slice(0, 7);
-        const orders = await this.orderService.getMonthsOrderData(
-          branches,
-          yearMonth,
-        );
+        const orders = await this.orderService.getMonthsOrderData(branches, yearMonth);
         const calendars = await this.firestoreService.getCollection(
           `Users/${userId}/calendar_views`,
         );
@@ -75,14 +69,13 @@ export class CalendarViewService {
         orders: [],
       };
     } catch (error) {
-      throw error;
+      throw new Error('Failed to retrieve calendar view');
     }
   }
 
-  // Creates a new calendar view for a user
   async createCalendarView(
     @Body() body: CreateCalendarViewReqDTO,
-  ): Promise<CreateCalendarViewRespDTO | Error> {
+  ): Promise<CreateCalendarViewRespDTO> {
     const {
       userId,
       calendarName,
@@ -103,7 +96,7 @@ export class CalendarViewService {
         regions,
         areas,
         calendar_name: calendarName,
-        is_default: calendarView.length == 0 ? true : isDefault,
+        is_default: calendarView.length === 0 ? true : isDefault,
         is_favorite: isFavorite,
       };
 
@@ -114,9 +107,7 @@ export class CalendarViewService {
       );
 
       const batch = this.firestoreService.firestore.batch();
-      const userRef = this.firestoreService.firestore
-        .collection('Users')
-        .doc(userId);
+      const userRef = this.firestoreService.firestore.collection('Users').doc(userId);
 
       if (calendarViewData.is_default) {
         batch.update(userRef, { default_calendar_view: calendarName });
@@ -132,41 +123,35 @@ export class CalendarViewService {
 
       return { message: 'Calendar view created successfully' };
     } catch (error) {
-      throw error;
+      throw new Error('Failed to create calendar view');
     }
   }
 
-  // Updates calendar details like default and favorite for a user
   async updateCalendarDetails(
     body: UpdateCalendarDetailsReqDTO,
-  ): Promise<UpdateCalendarDetailsRespDTO | Error> {
+  ): Promise<UpdateCalendarDetailsRespDTO> {
+    const { userId, calendarName, isDefault, isFavorite } = body;
+
     try {
-      const { userId, calendarName, isDefault, isFavorite } = body;
       const batch = this.firestoreService.firestore.batch();
       const calendarViewRef = this.firestoreService.firestore
         .collection(`Users/${userId}/calendar_views`)
         .doc(calendarName);
       const docSnapshot = await calendarViewRef.get();
+
       if (!docSnapshot.exists) {
-        return {
-          calendarList: [],
-        };
+        return { calendarList: [] };
       }
+
       const viewData = docSnapshot.data();
       batch.update(calendarViewRef, {
-        is_default:
-          isDefault == false || !isDefault || isDefault == null
-            ? viewData.is_default
-            : isDefault,
-        is_favorite: isFavorite == null ? viewData.is_favorite : isFavorite,
+        is_default: isDefault ?? viewData.is_default,
+        is_favorite: isFavorite ?? viewData.is_favorite,
       });
 
       if (isDefault) {
-        const userRef = this.firestoreService.firestore
-          .collection('Users')
-          .doc(userId);
+        const userRef = this.firestoreService.firestore.collection('Users').doc(userId);
         batch.update(userRef, { default_calendar_view: calendarName });
-
         await this.firestoreService.updateDocumentsWithField(
           `Users/${userId}/calendar_views`,
           calendarName,
@@ -176,6 +161,7 @@ export class CalendarViewService {
       }
 
       await batch.commit();
+
       const calendars = await this.firestoreService.getCollection(
         `Users/${userId}/calendar_views`,
       );
@@ -185,9 +171,10 @@ export class CalendarViewService {
         isFavorite: calendar.is_favorite,
         isDefault: calendar.is_default,
       }));
-      return { calendarList: calendarList };
+      
+      return { calendarList };
     } catch (error) {
-      throw error;
+      throw new Error('Failed to update calendar details');
     }
   }
 }

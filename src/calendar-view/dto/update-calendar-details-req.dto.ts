@@ -16,26 +16,26 @@ export class UpdateCalendarDetailsReqDTO {
   })
   userId: string;
 
+  @IsString()
+  @IsNotEmpty()
   @ApiProperty({
     default: 'my_calendar',
   })
-  @IsString()
-  @IsNotEmpty()
   calendarName: string;
 
+  @IsBoolean()
+  @IsOptional()
   @ApiProperty({
     required: false,
     default: false,
   })
-  @IsBoolean()
-  @IsOptional()
-  isDefault: boolean;
+  isDefault?: boolean = false;
 
+  @IsBoolean()
+  @IsOptional()
   @ApiProperty({
     required: false,
     default: false,
   })
-  @IsBoolean()
-  @IsOptional()
-  isFavorite: boolean;
+  isFavorite?: boolean = false;
 }

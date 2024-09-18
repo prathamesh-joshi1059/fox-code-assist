@@ -4,7 +4,6 @@ import { CalendarViewController } from './calendar-view.controller';
 import { FirestoreModule } from '../common/firestore/firestore.module';
 import { OrderModule } from 'src/orders/order.module';
 
-// Module for managing calendar view functionality
 @Module({
   imports: [FirestoreModule, OrderModule],
   controllers: [CalendarViewController],

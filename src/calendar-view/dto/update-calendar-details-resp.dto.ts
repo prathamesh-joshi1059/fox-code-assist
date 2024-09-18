@@ -22,5 +22,5 @@ export class UpdateCalendarDetailsRespDTO {
     branches: string[];
     isFavorite: boolean;
     isDefault: boolean;
-  }>;
+  }> = [];
 }

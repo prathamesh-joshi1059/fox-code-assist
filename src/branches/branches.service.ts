@@ -6,14 +6,13 @@ import { BranchRespDTO } from './dto/branches-resp.dto';
 export class BranchesService {
   constructor(private readonly firestoreService: FirestoreService) {}
 
-  // Retrieves all branches from Firestore and maps them to BranchRespDTO
   async getAllBranches(): Promise<BranchRespDTO[]> {
     const branches = await this.firestoreService.getCollection('branches');
-    return branches.map((branch) => ({
-      area: branch.area,
-      branchId: branch.branch_id,
-      regionName: branch.region_name,
-      branchName: branch.branch_name,
+    return branches.map(({ area, branch_id, region_name, branch_name }) => ({
+      area,
+      branchId: branch_id,
+      regionName: region_name,
+      branchName: branch_name,
     }));
   }
 }

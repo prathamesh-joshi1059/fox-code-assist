@@ -22,9 +22,6 @@ export class GetOrdersByMonthReqDTO {
   @ApiProperty({ example: '2024-05' })
   @IsString()
   @IsNotEmpty()
-  @IsDateString(
-    { strict: true },
-    { message: 'yearMonth must be in the format YYYY-MM' },
-  )
+  @IsDateString({ strict: true }, { message: 'yearMonth must be in the format YYYY-MM' })
   yearMonth: string;
 }

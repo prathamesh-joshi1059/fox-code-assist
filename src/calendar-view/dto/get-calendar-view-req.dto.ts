@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsString, isNotEmpty } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 
 export class GetCalendarViewReqDTO {
   @IsString()
@@ -9,7 +9,7 @@ export class GetCalendarViewReqDTO {
     default: 'john.doe@example.com',
   })
   userId: string;
-  
+
   @IsString()
   @IsNotEmpty()
   @ApiProperty({

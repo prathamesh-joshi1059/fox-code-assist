@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class getOrdersByDayRespDTO {
+export class GetOrdersByDayRespDTO {
   @ApiProperty()
   projectType: string;
 
@@ -28,7 +28,7 @@ export class getOrdersByDayRespDTO {
   @ApiProperty()
   notes: string;
 
-  @ApiProperty()
+  @ApiProperty({ nullable: true })
   url: string | null;
 
   @ApiProperty()

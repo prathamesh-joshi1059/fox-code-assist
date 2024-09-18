@@ -1,13 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-// Common Response DTO to send response in fixed format
 export class ResponseDTO<T> {
   @ApiProperty({ example: 'Success' })
-  status: string;
+  status: string = 'Success';
   @ApiProperty({ example: 200 })
-  statusCode: number;
+  statusCode: number = 200;
   @ApiProperty({ example: 'Data Fetched Successfully' })
-  message: string;
+  message: string = 'Data Fetched Successfully';
   @ApiProperty({ example: [] })
-  data: T;
+  data: T = {} as T;
 }

@@ -11,7 +11,6 @@ import { BranchRespDTO } from './dto/branches-resp.dto';
 export class BranchesController {
   constructor(private readonly branchesService: BranchesService) {}
 
-  // Retrieves all branches and returns a formatted response
   @Get()
   @ApiResponse({
     status: 1000,
@@ -30,7 +29,7 @@ export class BranchesController {
       status: 'Success',
       statusCode: 1000,
       message: 'Branches Found',
-      data: branches,
+      data: branches || [],
     };
   }
 }

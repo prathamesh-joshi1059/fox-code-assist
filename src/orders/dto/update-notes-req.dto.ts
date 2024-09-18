@@ -9,5 +9,5 @@ export class UpdateNotesReqDTO {
 
   @ApiProperty({ required: true, example: 'Test Notes' })
   @IsString()
-  notes: string;
+  notes?: string = '';
 }

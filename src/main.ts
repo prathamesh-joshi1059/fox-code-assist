@@ -9,23 +9,17 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors();
   app.useGlobalGuards(new AzureADGuard());
-
+  
   const swaggerConfig = createSwaggerConfig();
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api', app, document);
 
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-    }),
-  );
-
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
   app.useGlobalFilters(new HttpExceptionFilter());
+  
   await app.listen(process.env.APP_PORT || 4000);
 }
 
-// creates swagger config
 function createSwaggerConfig() {
   const link = getEnvironmentLink();
   return new DocumentBuilder()
@@ -46,18 +40,14 @@ function createSwaggerConfig() {
     .build();
 }
 
-// returns the link for the environment
-function getEnvironmentLink() {
-  switch (process.env.ENV) {
-    case 'dev':
-      return 'https://fence-calendar-web-app-ci-okebfkdgwq-uc.a.run.app/';
-    case 'qa':
-      return 'https://fence-calendar-api-qa-okebfkdgwq-uc.a.run.app';
-    case 'prod':
-      return 'https://fence-calendar-api-prod-okebfkdgwq-uc.a.run.app';
-    default:
-      return '';
-  }
+function getEnvironmentLink(): string {
+  const envLinks: Record<string, string> = {
+    dev: 'https://fence-calendar-web-app-ci-okebfkdgwq-uc.a.run.app/',
+    qa: 'https://fence-calendar-api-qa-okebfkdgwq-uc.a.run.app',
+    prod: 'https://fence-calendar-api-prod-okebfkdgwq-uc.a.run.app',
+  };
+  
+  return envLinks[process.env.ENV] || '';
 }
 
 bootstrap();

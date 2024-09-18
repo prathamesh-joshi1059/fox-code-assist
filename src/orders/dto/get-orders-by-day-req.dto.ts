@@ -1,11 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsArray,
-  IsDateString,
-  IsNotEmpty,
-  IsString,
-  Matches,
-} from 'class-validator';
+import { IsArray, IsDateString, IsNotEmpty, IsString, Matches } from 'class-validator';
 
 export class GetOrdersByDayReqDTO {
   @ApiProperty({ type: [String], example: ['MEL'] })
@@ -18,9 +12,6 @@ export class GetOrdersByDayReqDTO {
   @ApiProperty({ type: String, example: '2021-12-12' })
   @IsString()
   @IsNotEmpty()
-  @IsDateString(
-    { strict: true },
-    { message: 'date must be in the format YYYY-MM-DD' },
-  )
+  @IsDateString({ strict: true }, { message: 'date must be in the format YYYY-MM-DD' })
   date: string;
 }

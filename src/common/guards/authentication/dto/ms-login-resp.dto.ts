@@ -1,5 +1,4 @@
-export class MsLoginRespDTO
-{
+export class MsLoginRespDTO {
     aud: string;
     iss: string;
     iat: number;
@@ -14,4 +13,4 @@ export class MsLoginRespDTO
     tid: string;
     uti: string;
     ver: string;
-  }
+}

@@ -27,7 +27,6 @@ import { UpdateNotesRespDTO } from './dto/update-notes-resp.dto';
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
-  // Retrieves order data for specified branches and month
   @ApiBearerAuth('Authorization')
   @ApiResponse({
     status: 1000,
@@ -61,30 +60,14 @@ export class OrderController {
     @Body(new ValidationPipe({ transform: true }))
     orderReqDTO: GetOrdersByMonthReqDTO,
   ): Promise<ResponseDTO<Array<GetOrdersByMonthRespDTO | Error>>> {
-    try {
-      const { branches, yearMonth } = orderReqDTO;
-      const orders: Array<GetOrdersByMonthRespDTO | Error> =
-        await this.orderService.getMonthsOrderData(branches, yearMonth);
-
-      const orderResponse = {
-        status: 'Success',
-        statusCode: 1000,
-        message: !orders.length ? 'Orders Not Found' : 'Orders Found',
-        data: orders,
-      };
-      return orderResponse;
-    } catch (error) {
-      const errorResponse = {
-        status: 'Fail',
-        statusCode: 1001,
-        message: 'Error occurred while fetching orders',
-        data: [error.message],
-      };
-      return errorResponse;
-    }
+    return this.handleOrderDataResponse(
+      () => this.orderService.getMonthsOrderData(orderReqDTO.branches, orderReqDTO.yearMonth),
+      1000,
+      1001,
+      'Orders Not Found',
+    );
   }
 
-  // Retrieves order data for specified branches and date
   @ApiBearerAuth('Authorization')
   @ApiResponse({
     status: 1000,
@@ -118,30 +101,14 @@ export class OrderController {
     @Body(new ValidationPipe({ transform: true }))
     getOrdersByDay: GetOrdersByDayReqDTO,
   ): Promise<ResponseDTO<Array<getOrdersByDayRespDTO | Error>>> {
-    try {
-      const { branches, date } = getOrdersByDay;
-      const orders: Array<getOrdersByDayRespDTO | Error> =
-        await this.orderService.getDaysOrderData(branches, date);
-
-      const orderResponse = {
-        status: 'Success',
-        statusCode: 1000,
-        message: !orders.length ? 'Orders Not Found' : 'Orders Found',
-        data: orders,
-      };
-      return orderResponse;
-    } catch (error) {
-      const errorResponse = {
-        status: 'Fail',
-        statusCode: 1007,
-        message: 'Error occurred while fetching orders',
-        data: [error.message],
-      };
-      return errorResponse;
-    }
+    return this.handleOrderDataResponse(
+      () => this.orderService.getDaysOrderData(getOrdersByDay.branches, getOrdersByDay.date),
+      1000,
+      1007,
+      'Orders Not Found',
+    );
   }
 
-  // Updates notes for specified order
   @ApiBearerAuth('Authorization')
   @ApiResponse({
     status: 1000,
@@ -156,8 +123,6 @@ export class OrderController {
       },
     },
   })
-  @ApiTags('Update-Notes')
-  @ApiBearerAuth('Authorization')
   @ApiResponse({
     status: 1009,
     description: 'Error occurred while updating notes',
@@ -174,25 +139,51 @@ export class OrderController {
   async updateNotes(
     @Body() body: UpdateNotesReqDTO,
   ): Promise<ResponseDTO<Array<UpdateNotesRespDTO | Error>>> {
-    try {
-      const updateNotes: UpdateNotesRespDTO =
-        await this.orderService.updateNotes(body);
+    return this.handleUpdateNotesResponse(body);
+  }
 
-      const updateNotesResponse = {
+  private async handleOrderDataResponse(
+    fetchOrders: () => Promise<Array<any>>,
+    successCode: number,
+    errorCode: number,
+    notFoundMessage: string,
+  ): Promise<ResponseDTO<Array<any>>> {
+    try {
+      const orders = await fetchOrders();
+      return {
+        status: 'Success',
+        statusCode: successCode,
+        message: !orders.length ? notFoundMessage : 'Orders Found',
+        data: orders,
+      };
+    } catch (error) {
+      return {
+        status: 'Fail',
+        statusCode: errorCode,
+        message: 'Error occurred while fetching orders',
+        data: [error.message],
+      };
+    }
+  }
+
+  private async handleUpdateNotesResponse(
+    body: UpdateNotesReqDTO,
+  ): Promise<ResponseDTO<Array<UpdateNotesRespDTO | Error>>> {
+    try {
+      const updateNotes = await this.orderService.updateNotes(body);
+      return {
         status: 'Success',
         statusCode: 1000,
-        message: `${updateNotes.message}`,
+        message: updateNotes.message,
         data: [updateNotes],
       };
-      return updateNotesResponse;
     } catch (error) {
-      const errorResponse = {
+      return {
         status: 'Fail',
         statusCode: 1009,
         message: 'Error occurred while updating notes',
         data: [error.message],
       };
-      return errorResponse;
     }
   }
 }

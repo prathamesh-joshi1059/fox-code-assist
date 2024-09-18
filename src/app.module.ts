@@ -8,7 +8,6 @@ import { CalendarViewModule } from './calendar-view/calendar-view.module';
 import { BranchesModule } from './branches/branches.module';
 import { PlaceholdersModule } from './placeholders/placeholders.module';
 
-// Root module of the application
 @Module({
   imports: [
     ConfigModule.forRoot(),

@@ -12,13 +12,13 @@ interface ErrorObject {
   error: string;
   statusCode: number;
 }
+
 @Catch(HttpException)
 export class HttpExceptionFilter<T extends HttpException>
   implements ExceptionFilter
 {
   private logger = new Logger(HttpExceptionFilter.name);
 
-  // Handles HTTP exceptions and logs error details
   catch(exception: T, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -26,7 +26,7 @@ export class HttpExceptionFilter<T extends HttpException>
     const status = exception.getStatus();
     const exceptionResponse = exception.getResponse();
     const error =
-      typeof response === 'string'
+      typeof exceptionResponse === 'string'
         ? { message: exceptionResponse }
         : (exceptionResponse as ErrorObject);
 

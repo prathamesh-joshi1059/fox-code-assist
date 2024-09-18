@@ -6,10 +6,10 @@ export interface MonthsOrdersData {
   address: string;
   phone?: string;
   order_id: string;
-  fences: {
+  fences: Array<{
     fence_type: string;
     no_of_units: number;
-  }[];
+  }>;
   work_type: string;
   driver: string;
 }

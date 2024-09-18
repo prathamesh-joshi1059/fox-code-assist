@@ -2,11 +2,14 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class BranchRespDTO {
   @ApiProperty()
-  area: string;
+  area!: string;
+
   @ApiProperty()
-  branchId: string;
+  branchId!: string;
+
   @ApiProperty()
-  regionName: string;
+  regionName!: string;
+
   @ApiProperty()
-  branchName: string;
+  branchName!: string;
 }
