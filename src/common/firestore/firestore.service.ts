@@ -100,6 +100,7 @@ export class FirestoreService {
     const startOfMonth = new Date(year, month - 1, 1);
     const endOfMonth = new Date(year, month, 0);
     startOfMonth.setDate(startOfMonth.getDate() - startOfMonth.getDay());
+    
     endOfMonth.setDate(endOfMonth.getDate() + (6 - endOfMonth.getDay()));
     const query = this.firestore
       .collection(collection)
