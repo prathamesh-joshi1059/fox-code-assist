@@ -1,9 +1,3 @@
-Remove any unused imports, variables, and functions
-Ensure consistent error handling and response patterns
-Apply DRY (Don't Repeat Yourself) principle to reduce code duplication
-Implement proper null checks and default values
-Assert types where required 
-Refactor code without changing functionality
-Follow best practices in Nest JS and TypeScript
-Don't write any comments
-Don't change the code formatting
+please keep the formatting unchanged
+do not remove one line comments
+List the issues in the code that violate TypeScript coding standards without providing suggestions or solutions and Place this list as a comment in the last line
