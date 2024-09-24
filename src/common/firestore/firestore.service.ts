@@ -4,16 +4,16 @@ import { Firestore, Timestamp } from '@google-cloud/firestore';
 @Injectable()
 export class FirestoreService {
   readonly firestore: Firestore;
+
   constructor() {
     this.firestore = new Firestore();
   }
 
   // Retrieves all documents from a collection
-  async getCollection(collection: string) {
+  async getCollection(collection: string): Promise<any[]> {
     const collectionRef = this.firestore.collection(collection);
     const snapshot = await collectionRef.get();
-    const data = snapshot.docs.map((doc) => doc.data());
-    return data;
+    return snapshot.docs.map((doc) => doc.data());
   }
 
   // Updates all documents except a matching document in a collection with a specified field and value
@@ -22,15 +22,17 @@ export class FirestoreService {
     documentName: string,
     field: string,
     value: string | boolean | number | Timestamp,
-  ) {
+  ): Promise<void> {
     const collectionRef = this.firestore.collection(collection);
     const snapshot = await collectionRef.get();
     const batch = this.firestore.batch();
+
     snapshot.docs.forEach((doc) => {
       if (doc.id !== documentName) {
         batch.update(doc.ref, { [field]: value });
       }
     });
+
     await batch.commit();
   }
 
@@ -40,13 +42,9 @@ export class FirestoreService {
     docId: string,
     field: string,
     value: string | boolean | number | Timestamp,
-  ) {
+  ): Promise<boolean> {
     try {
-      await this.firestore
-        .collection(collection)
-        .doc(docId)
-        .update({ [field]: value });
-
+      await this.firestore.collection(collection).doc(docId).update({ [field]: value });
       return true;
     } catch (error) {
       console.error('Error updating order notes:', error);
@@ -55,14 +53,11 @@ export class FirestoreService {
   }
 
   // Retrieves a single document from a collection by name
-  async getDocumentByName(collection: string, documentName: string) {
+  async getDocumentByName(collection: string, documentName: string): Promise<any | null> {
     const docRef = this.firestore.collection(collection).doc(documentName);
     const docSnapshot = await docRef.get();
-    if (!docSnapshot.exists) {
-      return null;
-    } else {
-      return docSnapshot.data();
-    }
+
+    return docSnapshot.exists ? docSnapshot.data() : null;
   }
 
   // Retrieves documents from a collection that match a specified field and value
@@ -70,23 +65,17 @@ export class FirestoreService {
     collection: string,
     field: string,
     value: string,
-  ) {
-    const query = this.firestore
-      .collection(collection)
-      .where(field, '==', value);
+  ): Promise<any[]> {
+    const query = this.firestore.collection(collection).where(field, '==', value);
     const snapshot = await query.get();
-    const data = snapshot.docs.map((doc) => doc.data());
-    return data;
+    return snapshot.docs.map((doc) => doc.data());
   }
 
   // Retrieves documents from a collection that match multiple specified fields and values
-  async getDocumentsWhere(collection: string, field: string, values: string[]) {
-    const query = this.firestore
-      .collection(collection)
-      .where(field, 'in', values);
+  async getDocumentsWhere(collection: string, field: string, values: string[]): Promise<any[]> {
+    const query = this.firestore.collection(collection).where(field, 'in', values);
     const snapshot = await query.get();
-    const data = snapshot.docs.map((doc) => doc.data());
-    return data;
+    return snapshot.docs.map((doc) => doc.data());
   }
 
   // Retrieves orders for month view from a Firestore collection based on specified query parameters and a specific date range
@@ -95,21 +84,22 @@ export class FirestoreService {
     field: string,
     values: string[],
     yearMonth: string,
-  ) {
+  ): Promise<any[]> {
     const [year, month] = yearMonth.split('-').map(Number);
     const startOfMonth = new Date(year, month - 1, 1);
     const endOfMonth = new Date(year, month, 0);
-    startOfMonth.setDate(startOfMonth.getDate() - startOfMonth.getDay());
     
+    startOfMonth.setDate(startOfMonth.getDate() - startOfMonth.getDay());
     endOfMonth.setDate(endOfMonth.getDate() + (6 - endOfMonth.getDay()));
+
     const query = this.firestore
       .collection(collection)
       .where(field, 'in', values)
       .where('start_date', '<=', endOfMonth)
       .where('end_date', '>=', startOfMonth);
+      
     const snapshot = await query.get();
-    const data = snapshot.docs.map((doc) => doc.data());
-    return data;
+    return snapshot.docs.map((doc) => doc.data());
   }
 
   // Retrieves orders for day view from a Firestore collection based on specified query parameters and a specific date range
@@ -118,7 +108,7 @@ export class FirestoreService {
     field: string,
     values: string[],
     date: string,
-  ) {
+  ): Promise<any[]> {
     const [year, month, day] = date.split('-').map(Number);
 
     const startOfDay = Timestamp.fromDate(new Date(year, month - 1, day));
@@ -133,18 +123,17 @@ export class FirestoreService {
       .where('end_date', '>=', startOfDay);
 
     const snapshot = await query.get();
-    const data = snapshot.docs.map((doc) => doc.data());
-    return data;
+    return snapshot.docs.map((doc) => doc.data());
   }
 
   // Creates a new document in a collection with the specified data
-  async setDocument<T>(collection: string, documentName: string, data: T) {
+  async setDocument<T>(collection: string, documentName: string, data: T): Promise<void> {
     const docRef = this.firestore.collection(collection).doc(documentName);
     await docRef.set(data);
   }
 
   // Converts a Date object to a Timestamp object
-  getTimestampFromDate(date: Date) {
+  getTimestampFromDate(date: Date): Timestamp {
     return Timestamp.fromDate(date);
   }
 
@@ -170,3 +159,11 @@ export class FirestoreService {
     }
   }
 }
+
+// Issues:
+// 1. Missing return types in several methods
+// 2. Type annotations should be used consistently
+// 3. Avoid using 'any', use more specific types if possible
+// 4. Promise<void> is missing for some async functions
+// 5. Inconsistent method spacing
+// 6. Using Error in promise return instead of standardized response
