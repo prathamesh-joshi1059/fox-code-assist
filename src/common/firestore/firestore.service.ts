@@ -3,7 +3,8 @@ import { Firestore, Timestamp } from '@google-cloud/firestore';
 
 @Injectable()
 export class FirestoreService {
-  readonly firestore: Firestore;
+  private readonly firestore: Firestore;
+
   constructor() {
     this.firestore = new Firestore();
   }
@@ -12,8 +13,7 @@ export class FirestoreService {
   async getCollection(collection: string) {
     const collectionRef = this.firestore.collection(collection);
     const snapshot = await collectionRef.get();
-    const data = snapshot.docs.map((doc) => doc.data());
-    return data;
+    return snapshot.docs.map((doc) => doc.data());
   }
 
   // Updates all documents except a matching document in a collection with a specified field and value
@@ -26,11 +26,13 @@ export class FirestoreService {
     const collectionRef = this.firestore.collection(collection);
     const snapshot = await collectionRef.get();
     const batch = this.firestore.batch();
+
     snapshot.docs.forEach((doc) => {
       if (doc.id !== documentName) {
         batch.update(doc.ref, { [field]: value });
       }
     });
+
     await batch.commit();
   }
 
@@ -40,13 +42,9 @@ export class FirestoreService {
     docId: string,
     field: string,
     value: string | boolean | number | Timestamp,
-  ) {
+  ): Promise<boolean> {
     try {
-      await this.firestore
-        .collection(collection)
-        .doc(docId)
-        .update({ [field]: value });
-
+      await this.firestore.collection(collection).doc(docId).update({ [field]: value });
       return true;
     } catch (error) {
       console.error('Error updating order notes:', error);
@@ -58,11 +56,7 @@ export class FirestoreService {
   async getDocumentByName(collection: string, documentName: string) {
     const docRef = this.firestore.collection(collection).doc(documentName);
     const docSnapshot = await docRef.get();
-    if (!docSnapshot.exists) {
-      return null;
-    } else {
-      return docSnapshot.data();
-    }
+    return docSnapshot.exists ? docSnapshot.data() : null;
   }
 
   // Retrieves documents from a collection that match a specified field and value
@@ -71,22 +65,16 @@ export class FirestoreService {
     field: string,
     value: string,
   ) {
-    const query = this.firestore
-      .collection(collection)
-      .where(field, '==', value);
+    const query = this.firestore.collection(collection).where(field, '==', value);
     const snapshot = await query.get();
-    const data = snapshot.docs.map((doc) => doc.data());
-    return data;
+    return snapshot.docs.map((doc) => doc.data());
   }
 
   // Retrieves documents from a collection that match multiple specified fields and values
   async getDocumentsWhere(collection: string, field: string, values: string[]) {
-    const query = this.firestore
-      .collection(collection)
-      .where(field, 'in', values);
+    const query = this.firestore.collection(collection).where(field, 'in', values);
     const snapshot = await query.get();
-    const data = snapshot.docs.map((doc) => doc.data());
-    return data;
+    return snapshot.docs.map((doc) => doc.data());
   }
 
   // Retrieves orders for month view from a Firestore collection based on specified query parameters and a specific date range
@@ -99,17 +87,17 @@ export class FirestoreService {
     const [year, month] = yearMonth.split('-').map(Number);
     const startOfMonth = new Date(year, month - 1, 1);
     const endOfMonth = new Date(year, month, 0);
-    startOfMonth.setDate(startOfMonth.getDate() - startOfMonth.getDay());
     
+    startOfMonth.setDate(startOfMonth.getDate() - startOfMonth.getDay());
     endOfMonth.setDate(endOfMonth.getDate() + (6 - endOfMonth.getDay()));
-    const query = this.firestore
-      .collection(collection)
+
+    const query = this.firestore.collection(collection)
       .where(field, 'in', values)
       .where('start_date', '<=', endOfMonth)
       .where('end_date', '>=', startOfMonth);
+
     const snapshot = await query.get();
-    const data = snapshot.docs.map((doc) => doc.data());
-    return data;
+    return snapshot.docs.map((doc) => doc.data());
   }
 
   // Retrieves orders for day view from a Firestore collection based on specified query parameters and a specific date range
@@ -120,21 +108,16 @@ export class FirestoreService {
     date: string,
   ) {
     const [year, month, day] = date.split('-').map(Number);
-
     const startOfDay = Timestamp.fromDate(new Date(year, month - 1, day));
-    const endOfDay = Timestamp.fromDate(
-      new Date(year, month - 1, day, 23, 59, 59, 999),
-    );
+    const endOfDay = Timestamp.fromDate(new Date(year, month - 1, day, 23, 59, 59, 999));
 
-    const query = this.firestore
-      .collection(collection)
+    const query = this.firestore.collection(collection)
       .where(field, 'in', values)
       .where('start_date', '<=', endOfDay)
       .where('end_date', '>=', startOfDay);
 
     const snapshot = await query.get();
-    const data = snapshot.docs.map((doc) => doc.data());
-    return data;
+    return snapshot.docs.map((doc) => doc.data());
   }
 
   // Creates a new document in a collection with the specified data
@@ -158,9 +141,7 @@ export class FirestoreService {
       const docSnapshot = await docRef.get();
 
       if (!docSnapshot.exists) {
-        throw new Error(
-          `Document with ID ${documentId} does not exist in collection ${collection}`,
-        );
+        throw new Error(`Document with ID ${documentId} does not exist in collection ${collection}`);
       }
 
       await docRef.delete();
@@ -170,3 +151,10 @@ export class FirestoreService {
     }
   }
 }
+
+// Issues: 
+// - Public class property should use 'private' or 'protected' modifier for encapsulation.
+// - Missing return type for async methods like getCollection, updateDocumentsWithField, etc.
+// - Inconsistent usage of promise return types in async methods.
+// - Long lines may exceed conventional limits for readability.
+// AI confidence score : 94.62%
